@@ -1,0 +1,1236 @@
+[
+    {
+        "id": "51b6d2ce3c7f314a",
+        "type": "tab",
+        "label": "RabbitMQ",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "61edcd83c5d4988b",
+        "type": "amqp-in",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Data receive",
+        "broker": "515731e8c98dcc2e",
+        "prefetch": 0,
+        "noAck": true,
+        "exchangeName": "WeatherMarine",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "User1Key1",
+        "exchangeDurable": true,
+        "queueName": "Queue1",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 230,
+        "y": 740,
+        "wires": [
+            [
+                "3d544ce06d6fb868"
+            ]
+        ]
+    },
+    {
+        "id": "f7fc7c3614d0b854",
+        "type": "amqp-out",
+        "z": "51b6d2ce3c7f314a",
+        "name": "",
+        "broker": "7cd98b034e0bc788",
+        "exchangeName": "WeatherMarine",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "",
+        "exchangeRoutingKeyType": "str",
+        "exchangeDurable": true,
+        "amqpProperties": "{ \"headers\": {} }",
+        "rpcTimeoutMilliseconds": 3000,
+        "outputs": 0,
+        "x": 600,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "db7e92e4e55138d3",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "select table",
+        "func": "var lat = msg.payload.lat;\nvar lon = msg.payload.lon;\n\nmsg.topic = 'SELECT latitude, longitude, temperature, rain, wind_speed, wave_height, timestamp FROM hourly_data WHERE latitude = ' + lat + ' AND longitude = ' + lon;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 800,
+        "wires": [
+            [
+                "f111b620436ccac8"
+            ]
+        ]
+    },
+    {
+        "id": "f111b620436ccac8",
+        "type": "sqlite",
+        "z": "51b6d2ce3c7f314a",
+        "mydb": "5592c0ac1723dc37",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Database",
+        "x": 800,
+        "y": 800,
+        "wires": [
+            [
+                "1eb5964a43d3f25b"
+            ]
+        ]
+    },
+    {
+        "id": "768588b183078670",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "arguments",
+        "func": "msg.routingKey = \"User1Key1\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 140,
+        "wires": [
+            [
+                "f7fc7c3614d0b854"
+            ]
+        ]
+    },
+    {
+        "id": "6ac6d0bd7edb7010",
+        "type": "ui_dropdown",
+        "z": "51b6d2ce3c7f314a",
+        "name": "",
+        "label": "Locations",
+        "tooltip": "",
+        "place": "Select",
+        "group": "1e9f4405099ee3ff",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "multiple": true,
+        "options": [
+            {
+                "label": "Piraeus",
+                "value": "Piraeus",
+                "type": "str"
+            },
+            {
+                "label": "Crete",
+                "value": "Crete",
+                "type": "str"
+            },
+            {
+                "label": "Thessaloniki",
+                "value": "Thessaloniki",
+                "type": "str"
+            },
+            {
+                "label": "Kerkyra",
+                "value": "Kerkyra",
+                "type": "str"
+            },
+            {
+                "label": "Lesvos",
+                "value": "Lesvos",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 180,
+        "y": 140,
+        "wires": [
+            [
+                "768588b183078670"
+            ]
+        ]
+    },
+    {
+        "id": "3d544ce06d6fb868",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Find Location",
+        "func": "var locations = msg.payload;\nvar lat;\nvar lon;\nvar location;\n\nfor (var i = 0; i < locations.length; i++) {\n    if (locations[i] === \"Piraeus\") {\n        lat = 37.75;\n        lon = 23.5;\n        location = locations[i];\n    }else if (locations[i] === \"Crete\") {\n        lat = 35.5;\n        lon = 24;\n        location = locations[i];\n    }else if (locations[i] === \"Thessaloniki\") {\n        lat = 40.5;\n        lon = 22.75;\n        location = locations[i];\n    }else if (locations[i] === \"Kerkyra\") {\n        lat = 39.5;\n        lon = 19.75;\n        location = locations[i];\n    }else if (locations[i] === \"Lesvos\") {\n        lat = 39;\n        lon = 26.5;\n        location = locations[i];\n    }\n    msg.payload = {};\n    msg.payload.location = location;\n    msg.payload.lat = lat;\n    msg.payload.lon = lon;\n    node.send(msg);\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 800,
+        "wires": [
+            [
+                "db7e92e4e55138d3"
+            ]
+        ]
+    },
+    {
+        "id": "1a9ab33f45f549f7",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "arguments",
+        "func": "msg.routingKey = \"User1Key2\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 180,
+        "wires": [
+            [
+                "f7fc7c3614d0b854"
+            ]
+        ]
+    },
+    {
+        "id": "f7ea7037d5b88c1e",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "arguments",
+        "func": "msg.routingKey = \"User1Key3\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 220,
+        "wires": [
+            [
+                "f7fc7c3614d0b854"
+            ]
+        ]
+    },
+    {
+        "id": "7a5362e2bbbab3f6",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "arguments",
+        "func": "msg.routingKey = \"User2Key1\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 320,
+        "wires": [
+            [
+                "f7fc7c3614d0b854"
+            ]
+        ]
+    },
+    {
+        "id": "b2d9a0512d90cc3d",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "arguments",
+        "func": "msg.routingKey = \"User2Key2\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 360,
+        "wires": [
+            [
+                "f7fc7c3614d0b854"
+            ]
+        ]
+    },
+    {
+        "id": "62fe025bfed325bd",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "arguments",
+        "func": "msg.routingKey = \"User2Key3\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 400,
+        "wires": [
+            [
+                "f7fc7c3614d0b854"
+            ]
+        ]
+    },
+    {
+        "id": "e427fd8985695b8e",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "arguments",
+        "func": "msg.routingKey = \"User3Key1\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 500,
+        "wires": [
+            [
+                "f7fc7c3614d0b854"
+            ]
+        ]
+    },
+    {
+        "id": "f6eab2a2ea589519",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "arguments",
+        "func": "msg.routingKey = \"User3Key2\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 540,
+        "wires": [
+            [
+                "f7fc7c3614d0b854"
+            ]
+        ]
+    },
+    {
+        "id": "26be2ad259bbd77c",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "arguments",
+        "func": "msg.routingKey = \"User3Key3\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 580,
+        "wires": [
+            [
+                "f7fc7c3614d0b854"
+            ]
+        ]
+    },
+    {
+        "id": "607afadf4f623951",
+        "type": "amqp-in",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Data receive",
+        "broker": "515731e8c98dcc2e",
+        "prefetch": 0,
+        "noAck": true,
+        "exchangeName": "WeatherMarine",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "User1Key2",
+        "exchangeDurable": true,
+        "queueName": "Queue2",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 230,
+        "y": 1000,
+        "wires": [
+            [
+                "15b910d7fc12e594"
+            ]
+        ]
+    },
+    {
+        "id": "1662a884bbbad8a4",
+        "type": "amqp-in",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Data receive",
+        "broker": "515731e8c98dcc2e",
+        "prefetch": 0,
+        "noAck": true,
+        "exchangeName": "WeatherMarine",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "User1Key3",
+        "exchangeDurable": true,
+        "queueName": "Queue3",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 230,
+        "y": 1280,
+        "wires": [
+            [
+                "38ea6a9cfdb62625"
+            ]
+        ]
+    },
+    {
+        "id": "b0f45733660cbab7",
+        "type": "amqp-in",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Data receive",
+        "broker": "515731e8c98dcc2e",
+        "prefetch": 0,
+        "noAck": true,
+        "exchangeName": "WeatherMarine",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "User2Key1",
+        "exchangeDurable": true,
+        "queueName": "Queue1",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 230,
+        "y": 800,
+        "wires": [
+            [
+                "3d544ce06d6fb868"
+            ]
+        ]
+    },
+    {
+        "id": "f7aa2c128948e072",
+        "type": "amqp-in",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Data receive",
+        "broker": "515731e8c98dcc2e",
+        "prefetch": 0,
+        "noAck": true,
+        "exchangeName": "WeatherMarine",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "User2Key3",
+        "exchangeDurable": true,
+        "queueName": "Queue3",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 230,
+        "y": 1340,
+        "wires": [
+            [
+                "38ea6a9cfdb62625"
+            ]
+        ]
+    },
+    {
+        "id": "fde2611fc5af0dc5",
+        "type": "amqp-in",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Data receive",
+        "broker": "515731e8c98dcc2e",
+        "prefetch": 0,
+        "noAck": true,
+        "exchangeName": "WeatherMarine",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "User2Key2",
+        "exchangeDurable": true,
+        "queueName": "Queue2",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 230,
+        "y": 1060,
+        "wires": [
+            [
+                "15b910d7fc12e594"
+            ]
+        ]
+    },
+    {
+        "id": "7d09d5c39d8c55f4",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 1",
+        "info": "",
+        "x": 170,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "7eb204ebea82bf01",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 2",
+        "info": "",
+        "x": 170,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "498b6c71d4d52118",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 3",
+        "info": "",
+        "x": 170,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "7dc2565cef8ff97a",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Queue 1",
+        "info": "",
+        "x": 100,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "7bbac0f341c671a0",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Queue 2",
+        "info": "",
+        "x": 100,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "3d55a71e9044821d",
+        "type": "amqp-in",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Data receive",
+        "broker": "515731e8c98dcc2e",
+        "prefetch": 0,
+        "noAck": true,
+        "exchangeName": "WeatherMarine",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "User3Key1",
+        "exchangeDurable": true,
+        "queueName": "Queue1",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 230,
+        "y": 860,
+        "wires": [
+            [
+                "3d544ce06d6fb868"
+            ]
+        ]
+    },
+    {
+        "id": "e108f1b0d4c0924f",
+        "type": "amqp-in",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Data receive",
+        "broker": "515731e8c98dcc2e",
+        "prefetch": 0,
+        "noAck": true,
+        "exchangeName": "WeatherMarine",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "User3Key3",
+        "exchangeDurable": true,
+        "queueName": "Queue3",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 230,
+        "y": 1400,
+        "wires": [
+            [
+                "38ea6a9cfdb62625"
+            ]
+        ]
+    },
+    {
+        "id": "9cc81de9efedeb59",
+        "type": "amqp-in",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Data receive",
+        "broker": "515731e8c98dcc2e",
+        "prefetch": 0,
+        "noAck": true,
+        "exchangeName": "WeatherMarine",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "User3Key2",
+        "exchangeDurable": true,
+        "queueName": "Queue2",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 230,
+        "y": 1120,
+        "wires": [
+            [
+                "15b910d7fc12e594"
+            ]
+        ]
+    },
+    {
+        "id": "a21230f4faee6e55",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "Queue 3",
+        "info": "",
+        "x": 100,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "044c2ef8355a2dd1",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "UI RabbitMQ tab",
+        "info": "",
+        "x": 200,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "7ded60d1be437378",
+        "type": "ui_dropdown",
+        "z": "51b6d2ce3c7f314a",
+        "name": "",
+        "label": "Locations",
+        "tooltip": "",
+        "place": "Select",
+        "group": "feb6b3082f29dca1",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "multiple": true,
+        "options": [
+            {
+                "label": "Piraeus",
+                "value": "Piraeus",
+                "type": "str"
+            },
+            {
+                "label": "Crete",
+                "value": "Crete",
+                "type": "str"
+            },
+            {
+                "label": "Thessaloniki",
+                "value": "Thessaloniki",
+                "type": "str"
+            },
+            {
+                "label": "Kerkyra",
+                "value": "Kerkyra",
+                "type": "str"
+            },
+            {
+                "label": "Lesvos",
+                "value": "Lesvos",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 180,
+        "y": 320,
+        "wires": [
+            [
+                "7a5362e2bbbab3f6"
+            ]
+        ]
+    },
+    {
+        "id": "1764dd105a67c0c0",
+        "type": "ui_dropdown",
+        "z": "51b6d2ce3c7f314a",
+        "name": "",
+        "label": "Locations",
+        "tooltip": "",
+        "place": "Select",
+        "group": "408bdaa1c07c2006",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "multiple": true,
+        "options": [
+            {
+                "label": "Piraeus",
+                "value": "Piraeus",
+                "type": "str"
+            },
+            {
+                "label": "Crete",
+                "value": "Crete",
+                "type": "str"
+            },
+            {
+                "label": "Thessaloniki",
+                "value": "Thessaloniki",
+                "type": "str"
+            },
+            {
+                "label": "Kerkyra",
+                "value": "Kerkyra",
+                "type": "str"
+            },
+            {
+                "label": "Lesvos",
+                "value": "Lesvos",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 180,
+        "y": 500,
+        "wires": [
+            [
+                "e427fd8985695b8e"
+            ]
+        ]
+    },
+    {
+        "id": "1eb5964a43d3f25b",
+        "type": "debug",
+        "z": "51b6d2ce3c7f314a",
+        "name": "message",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "db4ef9b1a282e1a0",
+        "type": "ui_form",
+        "z": "51b6d2ce3c7f314a",
+        "name": "",
+        "label": "",
+        "group": "1e9f4405099ee3ff",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "options": [
+            {
+                "label": "Temperature",
+                "value": "temperature",
+                "type": "number",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "temperature": ""
+        },
+        "payload": "",
+        "submit": "submit",
+        "cancel": "cancel",
+        "topic": "topic",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "x": 170,
+        "y": 180,
+        "wires": [
+            [
+                "1a9ab33f45f549f7"
+            ]
+        ]
+    },
+    {
+        "id": "1a536ae0f046cb4e",
+        "type": "ui_form",
+        "z": "51b6d2ce3c7f314a",
+        "name": "",
+        "label": "",
+        "group": "feb6b3082f29dca1",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "options": [
+            {
+                "label": "Temperature",
+                "value": "temperature",
+                "type": "number",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "temperature": ""
+        },
+        "payload": "",
+        "submit": "submit",
+        "cancel": "cancel",
+        "topic": "topic",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "x": 170,
+        "y": 360,
+        "wires": [
+            [
+                "b2d9a0512d90cc3d"
+            ]
+        ]
+    },
+    {
+        "id": "18d8de0cb6e881b5",
+        "type": "ui_form",
+        "z": "51b6d2ce3c7f314a",
+        "name": "",
+        "label": "",
+        "group": "408bdaa1c07c2006",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "options": [
+            {
+                "label": "Temperature",
+                "value": "temperature",
+                "type": "number",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "temperature": ""
+        },
+        "payload": "",
+        "submit": "submit",
+        "cancel": "cancel",
+        "topic": "topic",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "x": 170,
+        "y": 540,
+        "wires": [
+            [
+                "f6eab2a2ea589519"
+            ]
+        ]
+    },
+    {
+        "id": "15b910d7fc12e594",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "select table",
+        "func": "var temperature = msg.payload.temperature;\n\nmsg.topic = 'SELECT temperature, latitude, longitude, timestamp FROM hourly_data WHERE temperature = ' + temperature;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 1060,
+        "wires": [
+            [
+                "4800f69ef926ab59"
+            ]
+        ]
+    },
+    {
+        "id": "de9bf6117841b729",
+        "type": "ui_date_picker",
+        "z": "51b6d2ce3c7f314a",
+        "name": "",
+        "label": "date",
+        "group": "1e9f4405099ee3ff",
+        "order": 5,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 170,
+        "y": 220,
+        "wires": [
+            [
+                "f7ea7037d5b88c1e"
+            ]
+        ]
+    },
+    {
+        "id": "0295660d26815291",
+        "type": "ui_date_picker",
+        "z": "51b6d2ce3c7f314a",
+        "name": "",
+        "label": "date",
+        "group": "feb6b3082f29dca1",
+        "order": 5,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 170,
+        "y": 400,
+        "wires": [
+            [
+                "62fe025bfed325bd"
+            ]
+        ]
+    },
+    {
+        "id": "b910196b2ff8accf",
+        "type": "ui_date_picker",
+        "z": "51b6d2ce3c7f314a",
+        "name": "",
+        "label": "date",
+        "group": "408bdaa1c07c2006",
+        "order": 5,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 170,
+        "y": 580,
+        "wires": [
+            [
+                "26be2ad259bbd77c"
+            ]
+        ]
+    },
+    {
+        "id": "38ea6a9cfdb62625",
+        "type": "function",
+        "z": "51b6d2ce3c7f314a",
+        "name": "select table",
+        "func": "var timestamp = msg.payload;\nvar date = new Date(timestamp);\n\nvar datePart = date.toISOString().split('T')[0];\n\nmsg.topic = \"SELECT latitude, longitude, temperature, rain, wind_speed, wave_height, timestamp FROM hourly_data WHERE timestamp LIKE '\" + datePart + \"%'\";\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 1340,
+        "wires": [
+            [
+                "e4e4e15bf4948f17"
+            ]
+        ]
+    },
+    {
+        "id": "29c032ea8eeed973",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 1",
+        "info": "",
+        "x": 90,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "ba8380072b2bf84f",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 2",
+        "info": "",
+        "x": 90,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "b3da581db64341f2",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 3",
+        "info": "",
+        "x": 90,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "7e04d60a81de23bb",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 1",
+        "info": "",
+        "x": 90,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "0fe2da5b1309c70e",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 2",
+        "info": "",
+        "x": 90,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "68c738a3d0052bfa",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 3",
+        "info": "",
+        "x": 90,
+        "y": 1120,
+        "wires": []
+    },
+    {
+        "id": "0e64564967292e12",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 1",
+        "info": "",
+        "x": 90,
+        "y": 1280,
+        "wires": []
+    },
+    {
+        "id": "b8720adad14b7b59",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 2",
+        "info": "",
+        "x": 90,
+        "y": 1340,
+        "wires": []
+    },
+    {
+        "id": "c6363a9f5da7c359",
+        "type": "comment",
+        "z": "51b6d2ce3c7f314a",
+        "name": "User 3",
+        "info": "",
+        "x": 90,
+        "y": 1400,
+        "wires": []
+    },
+    {
+        "id": "4800f69ef926ab59",
+        "type": "sqlite",
+        "z": "51b6d2ce3c7f314a",
+        "mydb": "5592c0ac1723dc37",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Database",
+        "x": 800,
+        "y": 1060,
+        "wires": [
+            [
+                "2da830714ea3238f"
+            ]
+        ]
+    },
+    {
+        "id": "2da830714ea3238f",
+        "type": "debug",
+        "z": "51b6d2ce3c7f314a",
+        "name": "message",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "e4e4e15bf4948f17",
+        "type": "sqlite",
+        "z": "51b6d2ce3c7f314a",
+        "mydb": "5592c0ac1723dc37",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Database",
+        "x": 800,
+        "y": 1340,
+        "wires": [
+            [
+                "4bd284d3495112b4"
+            ]
+        ]
+    },
+    {
+        "id": "4bd284d3495112b4",
+        "type": "debug",
+        "z": "51b6d2ce3c7f314a",
+        "name": "message",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 1340,
+        "wires": []
+    },
+    {
+        "id": "e222de090c5dbc06",
+        "type": "ui_spacer",
+        "z": "51b6d2ce3c7f314a",
+        "name": "spacer",
+        "group": "1e9f4405099ee3ff",
+        "order": 2,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "75d3357de926782e",
+        "type": "ui_spacer",
+        "z": "51b6d2ce3c7f314a",
+        "name": "spacer",
+        "group": "1e9f4405099ee3ff",
+        "order": 4,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "1f479660aaf9bb45",
+        "type": "ui_spacer",
+        "z": "51b6d2ce3c7f314a",
+        "name": "spacer",
+        "group": "feb6b3082f29dca1",
+        "order": 2,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "ea9acf8a09199a82",
+        "type": "ui_spacer",
+        "z": "51b6d2ce3c7f314a",
+        "name": "spacer",
+        "group": "feb6b3082f29dca1",
+        "order": 4,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "4d55aaf0d7cb39a0",
+        "type": "ui_spacer",
+        "z": "51b6d2ce3c7f314a",
+        "name": "spacer",
+        "group": "408bdaa1c07c2006",
+        "order": 2,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "81b2b0c0b14c3aca",
+        "type": "ui_spacer",
+        "z": "51b6d2ce3c7f314a",
+        "name": "spacer",
+        "group": "408bdaa1c07c2006",
+        "order": 4,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "515731e8c98dcc2e",
+        "type": "amqp-broker",
+        "name": "",
+        "host": "localhost",
+        "port": "5672",
+        "vhost": "",
+        "tls": false,
+        "credsFromSettings": false
+    },
+    {
+        "id": "7cd98b034e0bc788",
+        "type": "amqp-broker",
+        "name": "",
+        "host": "localhost",
+        "port": "5672",
+        "vhost": "",
+        "tls": false,
+        "credsFromSettings": false
+    },
+    {
+        "id": "5592c0ac1723dc37",
+        "type": "sqlitedb",
+        "db": "C:\\Users\\User\\Downloads\\weather.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "1e9f4405099ee3ff",
+        "type": "ui_group",
+        "name": "User 1",
+        "tab": "3303a53dd13392e8",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "feb6b3082f29dca1",
+        "type": "ui_group",
+        "name": "User 2",
+        "tab": "3303a53dd13392e8",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "408bdaa1c07c2006",
+        "type": "ui_group",
+        "name": "User 3",
+        "tab": "3303a53dd13392e8",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "3303a53dd13392e8",
+        "type": "ui_tab",
+        "name": "RabbitMQ",
+        "icon": "dashboard",
+        "order": 3,
+        "disabled": false,
+        "hidden": false
+    }
+]
